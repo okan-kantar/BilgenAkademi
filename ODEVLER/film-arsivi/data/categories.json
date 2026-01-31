@@ -1,0 +1,19 @@
+{
+  "categories": [
+    {
+      "id": "sci-fi",
+      "name": "Science Fiction",
+      "description": "Bilim kurgu filmleri"
+    },
+    {
+      "id": "drama",
+      "name": "Drama",
+      "description": "Dram filmleri"
+    },
+    {
+      "id": "action",
+      "name": "Action",
+      "description": "Aksiyon filmleri"
+    }
+  ]
+}

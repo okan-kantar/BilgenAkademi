@@ -1,0 +1,94 @@
+{
+  "films": [
+    {
+      "id": 1,
+      "title": "Inception",
+      "year": 2010,
+      "director": "Christopher Nolan",
+      "category": "sci-fi",
+      "rating": 8.8,
+      "watched": true
+    },
+    {
+      "id": 2,
+      "title": "The Matrix",
+      "year": 1999,
+      "director": "Wachowski Brothers",
+      "category": "sci-fi",
+      "rating": 8.7,
+      "watched": true
+    },
+    {
+      "id": 3,
+      "title": "The Godfather",
+      "year": 1972,
+      "director": "Francis Ford Coppola",
+      "category": "drama",
+      "rating": 9.2,
+      "watched": false
+    },
+    {
+      "id": 4,
+      "title": "Pulp Fiction",
+      "year": 1994,
+      "director": "Quentin Tarantino",
+      "category": "drama",
+      "rating": 8.9,
+      "watched": true
+    },
+    {
+      "id": 5,
+      "title": "The Dark Knight",
+      "year": 2008,
+      "director": "Christopher Nolan",
+      "category": "action",
+      "rating": 9.0,
+      "watched": true
+    },
+    {
+      "id": 6,
+      "title": "Forrest Gump",
+      "year": 1994,
+      "director": "Robert Zemeckis",
+      "category": "drama",
+      "rating": 8.8,
+      "watched": false
+    },
+    {
+      "id": 7,
+      "title": "Interstellar",
+      "year": 2014,
+      "director": "Christopher Nolan",
+      "category": "sci-fi",
+      "rating": 8.6,
+      "watched": true
+    },
+    {
+      "id": 8,
+      "title": "The Shawshank Redemption",
+      "year": 1994,
+      "director": "Frank Darabont",
+      "category": "drama",
+      "rating": 9.3,
+      "watched": false
+    },
+    {
+      "id": 9,
+      "title": "Fight Club",
+      "year": 1999,
+      "director": "David Fincher",
+      "category": "drama",
+      "rating": 8.8,
+      "watched": true
+    },
+    {
+      "id": 10,
+      "title": "Gladiator",
+      "year": 2000,
+      "director": "Ridley Scott",
+      "category": "action",
+      "rating": 8.5,
+      "watched": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anasayfa</title>
+</head>
+<body>
+    <h1>Film Arşivine Hoşgeldiniz!</h1>
+    <p>En sevdiğiniz filmleri keşfedin ve detaylarına göz atın.</p>
+    <p>Toplam film sayısı: {{total_films}}</p>
+
+    <h2>İzlenen/İzlenmeyen Film Sayısı</h2>
+    <ul>
+        <li>İzlenen filmler: {{ watched_count }}</li>
+        <li>İzlenmeyen filmler: {{ unwatched_count }}</li>
+    </ul>
+    
+    <p>Ortalama puan: {{ average_rating }}</p>
+
+    <h2>Son Eklenen Filmler</h2>
+    <ul>
+        {{recent_films}}
+    </ul>
+
+    <div>
+        <a href="/films">Tüm Filmleri Görüntüle</a>
+    </div>
+</body>
+</html>
