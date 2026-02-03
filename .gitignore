@@ -4,3 +4,7 @@
 /Ders4_24012026
 /Ders5_29012026
 /Ders7_31012026
+
+package-lock.json
+node_modules/
+package.json

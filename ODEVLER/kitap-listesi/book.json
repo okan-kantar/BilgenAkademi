@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "title": "Suç ve Ceza",
+    "author": "Dostoyevski",
+    "year": 1866,
+    "read": true
+  },
+  {
+    "id": 2,
+    "title": "Sefiller",
+    "author": "Victor Hugo",
+    "year": 1862,
+    "read": false
+  },
+  {
+    "id": 3,
+    "title": "1984",
+    "author": "George Orwell",
+    "year": 1949,
+    "read": true
+  },
+  {
+    "id": 4,
+    "title": "Küçük Prens",
+    "author": "Antoine de Saint-Exupéry",
+    "year": 1943,
+    "read": true
+  },
+  {
+    "id": 5,
+    "title": "Dönüşüm",
+    "author": "Franz Kafka",
+    "year": 1915,
+    "read": false
+  },
+  {
+    "id": 6,
+    "title": "Simyacı",
+    "author": "Paulo Coelho",
+    "year": 1988,
+    "read": true
+  },
+  {
+    "id": 7,
+    "title": "Hayvan Çiftliği",
+    "author": "George Orwell",
+    "year": 1945,
+    "read": false
+  },
+  {
+    "id": 8,
+    "title": "Yeraltından Notlar",
+    "author": "Dostoyevski",
+    "year": 1864,
+    "read": true
+  },
+  {
+    "id": 9,
+    "title": "Yüzyıllık Yalnızlık",
+    "author": "Gabriel García Márquez",
+    "year": 1967,
+    "read": false
+  },
+  {
+    "id": 10,
+    "title": "Fareler ve İnsanlar",
+    "author": "John Steinbeck",
+    "year": 1937,
+    "read": true
+  }
+]
