@@ -7,6 +7,7 @@ const { logger } = require('./middleware/logEvents.js');
 const errorHandler = require('./middleware/errorHandler.js');
 const corsOptions = require('./config/corsConfig.js');
 const userRoutes = require('./routes/userRoutes.js');
+const authRoutes = require('./routes/authRoutes.js');
 const PORT = 3000;
 
 app.use(cors(corsOptions));
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use((req, res) => {
   res.status(404).send('Page not found!');
