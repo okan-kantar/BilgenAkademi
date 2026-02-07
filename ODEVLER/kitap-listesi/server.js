@@ -12,11 +12,11 @@ const filePath = path.join(__dirname, "book.json");
 const readData = () => {
   const jsonData = fs.readFileSync(filePath);
   return JSON.parse(jsonData);
-}
+};
 
 const writeData = (data) => {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
+};
 
 app.get("/books", (req, res) => {
   const data = readData();
@@ -26,14 +26,13 @@ app.get("/books", (req, res) => {
 app.get("/books/:id", (req, res) => {
   const bookId = parseInt(req.params.id);
   const data = readData();
-  const book = data.find(b => b.id === bookId);
-  if (book){
+  const book = data.find((b) => b.id === bookId);
+  if (book) {
     return res.status(200).json(book);
-  }
-  else{
+  } else {
     return res.status(404).json({ message: "Kitap bulunamadı" });
   }
-})
+});
 
 app.post("/add-book", (req, res) => {
   const data = req.body;
@@ -47,35 +46,33 @@ app.put("/update-book/:id", (res, reg) => {
   const bookId = parseInt(req.params.id);
   const updatedData = req.body;
   const jsonData = readData();
-  const bookData = jsonData.find(b => b.id === bookId);
-  if(bookData){
-    jsonData = jsonData.map(b => {
-      if(b.id === bookId){
-        return {...b, ...updatedData}
+  const bookData = jsonData.find((b) => b.id === bookId);
+  if (bookData) {
+    jsonData = jsonData.map((b) => {
+      if (b.id === bookId) {
+        return { ...b, ...updatedData };
       }
       return b;
-    })
+    });
     writeData(jsonData);
     res.status(200).json(jsonData);
-  }
-  else{
+  } else {
     res.status(404).json({ message: "Kitap bulunamadı" });
   }
-})
+});
 
 app.delete("/delete-book/:id", (req, res) => {
   const bookId = parseInt(req.params.id);
   let jsonData = readData();
-  const bookIndex = jsonData.findIndex(b=> b.id === bookId);
-  if(bookIndex !== -1){
+  const bookIndex = jsonData.findIndex((b) => b.id === bookId);
+  if (bookIndex !== -1) {
     jsonData.splice(bookIndex, 1);
     writeData(jsonData);
     res.status(200).json({ message: "Kitap silindi", data: jsonData });
-  }
-  else{
+  } else {
     res.status(404).json({ message: "Kitap bulunamadı" });
   }
-})
+});
 
 app.use((req, res) => {
   res.status(404).send("404 Not Found");
