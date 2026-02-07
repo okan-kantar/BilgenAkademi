@@ -1,0 +1,31 @@
+{
+  "name": "2026-1-nodejs-bootcamp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eminbasbayan/2026-1-nodejs-bootcamp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/eminbasbayan/2026-1-nodejs-bootcamp/issues"
+  },
+  "homepage": "https://github.com/eminbasbayan/2026-1-nodejs-bootcamp#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "date-fns": "^4.1.0",
+    "express": "^5.2.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
