@@ -1,10 +1,9 @@
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const fs = require('node:fs');
-const path = require('node:path');
 const { logger } = require('./middleware/logEvents.js');
-const errorHandler = require('./middleware/errorHandler.js');
 const corsOptions = require('./config/corsConfig.js');
 const userRoutes = require('./routes/userRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
