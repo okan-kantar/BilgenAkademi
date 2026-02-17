@@ -7,3 +7,4 @@
 /Ders8_05022026
 package-lock.json
 node_modules/
+.env
