@@ -13,9 +13,8 @@ const productSchema = new mongoose.Schema(
       min: [0, 'Fiyat negatif olamaz.'],
     },
     category: {
-      type: String,
-      enum: ['Elektronik', 'Giyim', 'Gıda'], // Sadece bu değerler kabul edilir
-      default: 'Gıda',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
     },
     description: {
       type: String,
