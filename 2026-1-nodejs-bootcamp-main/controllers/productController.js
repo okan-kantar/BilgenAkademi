@@ -1,8 +1,9 @@
 const Product = require('../models/Product');
+const Category = require('../models/Category');
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().populate("category", "name");
 
     res.json({ success: true, count: products.length, data: products });
   } catch (error) {
@@ -56,8 +57,65 @@ const createNewProduct = async (req, res) => {
   }
 };
 
+const getProductsByCategories = async (req, res) => {
+  try {
+    const rawCategories = req.query.categories;
+
+    if (!rawCategories) {
+      return res.status(400).json({
+        success: false,
+        message: 'Kategori parametresi zorunludur',
+      });
+    }
+
+    const normalizedCategories = Array.isArray(rawCategories)
+      ? rawCategories.join(',')
+      : rawCategories;
+
+    const categoryNames = [...new Set(
+      normalizedCategories
+        .split(',')
+        .map((category) => category.trim())
+        .filter(Boolean),
+    )];
+
+    if (!categoryNames.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Gecerli kategori listesi gondermelisiniz',
+      });
+    }
+
+    const categories = await Category.find({ name: { $in: categoryNames } })
+      .select('_id name')
+      .lean();
+
+    if (!categories.length) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verilen kategorilere ait sonuc bulunamadi',
+      });
+    }
+
+    const categoryIds = categories.map((category) => category._id);
+
+    const products = await Product.find({ category: { $in: categoryIds } })
+      .populate('category', 'name');
+
+    res.json({
+      success: true,
+      count: products.length,
+      categories: categories.map((category) => category.name),
+      data: products,
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getAllProducts,
+  getProductsByCategories,
   createNewProduct,
   updateProduct,
   deleteProduct,
