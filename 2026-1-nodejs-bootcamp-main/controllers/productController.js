@@ -3,6 +3,7 @@ const Category = require('../models/Category');
 
 const getAllProducts = async (req, res) => {
   try {
+    // populate ile category bilgisini de getiriyoruz, sadece name alanını alıyoruz
     const products = await Product.find().populate("category", "name");
 
     res.json({ success: true, count: products.length, data: products });
