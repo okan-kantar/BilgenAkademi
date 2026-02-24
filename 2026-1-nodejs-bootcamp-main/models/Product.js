@@ -18,7 +18,7 @@ const productSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      max: 100,
+      maxlength: 100,
     },
     inStock: {
       type: Boolean,
