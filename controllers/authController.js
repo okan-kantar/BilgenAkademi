@@ -2,17 +2,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const {
-  secret,
-  expiresIn,
-  accessToken,
-  refreshToken,
-} = require('../config/jwtConfig');
-const refreshTokenController = require('./refreshTokenController');
+const { accessToken, refreshToken } = require('../config/jwtConfig');
+const User = require('../models/User');
+const RefreshToken = require('../models/RefreshToken');
 
 const generateTokens = (user) => {
-  const accessTokenPayload = { id: user.id, email: user.email };
-  const refreshTokenPayload = { id: user.id };
+  const userId = user._id ? user._id.toString() : user.id;
+  const userRole = user.role || 'user';
+
+  const accessTokenPayload = { id: userId, email: user.email, role: userRole };
+  const refreshTokenPayload = { id: userId };
 
   const newAccessToken = jwt.sign(accessTokenPayload, accessToken.secret, {
     expiresIn: accessToken.expiresIn,
@@ -26,18 +25,12 @@ const generateTokens = (user) => {
 };
 
 const registerUser = async (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-
   try {
-    let newUser = { id: Math.random(), email, password };
+    const { email, password } = req.body;
 
-    const usersFilePath = path.join(__dirname, '..', 'models', 'users.json');
-    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
+    const existingUser = await User.findOne({ email });
 
-    const findUser = users.find((user) => user.email === email);
-
-    if (findUser) {
+    if (existingUser) {
       return res
         .status(400)
         .json({ message: 'Bu email adresi zaten kayıtlı!' });
@@ -47,14 +40,21 @@ const registerUser = async (req, res) => {
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
 
-    newUser = {
-      ...newUser,
+    const createdUser = await User.create({
+      email,
       password: hashedPassword,
+    });
+
+    // const { password: _, ...newUser } = createdUser;
+
+    const userWithoutPassword = {
+      id: createdUser._id.toString(),
+      email: createdUser.email,
+      createdAt: createdUser.createdAt,
+      updatedAt: createdUser.updatedAt,
     };
 
-    users.push(newUser);
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
-    res.status(201).json(newUser);
+    res.status(201).json(userWithoutPassword);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -64,29 +64,41 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const usersFilePath = path.join(__dirname, '..', 'models', 'users.json');
-    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
+    const existingUser = await User.findOne({ email });
 
-    const findUser = users.find((user) => user.email === email);
-
-    if (!findUser) {
+    if (!existingUser) {
       return res.status(401).json({ message: 'Geçersiz email veya şifre' });
     }
 
     // Şifre Kontrolü                             // 123456     // $2b$10$bdH29/sfSfi0u0OYf2YZl.WQNaFJw8QpJBmVxz3afxKXdEhx.gntK
-    const validPassword = await bcryptjs.compare(password, findUser.password);
+    const validPassword = await bcryptjs.compare(
+      password,
+      existingUser.password,
+    );
 
     if (!validPassword) {
       return res.status(401).json({ message: 'Geçersiz email veya şifre' });
     }
 
-    const { password: _, ...user } = findUser;
+    const userWithoutPassword = {
+      id: existingUser._id.toString(),
+      email: existingUser.email,
+      createdAt: existingUser.createdAt,
+      updatedAt: existingUser.updatedAt,
+    };
 
-    const tokens = generateTokens(user);
+    const tokens = generateTokens(existingUser);
 
-    refreshTokenController.saveToken(user.id, tokens.refreshToken);
+    await RefreshToken.deleteMany({ userId: existingUser._id });
 
-    res.status(200).json({ message: 'Giriş başarılı!', user, tokens });
+    await RefreshToken.create({
+      userId: existingUser._id,
+      token: tokens.refreshToken,
+    });
+
+    res
+      .status(200)
+      .json({ message: 'Giriş başarılı!', user: userWithoutPassword, tokens });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -96,16 +108,38 @@ const refreshTokens = async (req, res) => {
   try {
     const oldRefreshToken = req.body.refreshToken;
 
-    // Remove old refresh token
-    refreshTokenController.removeToken(oldRefreshToken);
+    if (!oldRefreshToken) {
+      return res
+        .status(400)
+        .json({ message: 'Refresh token değerli zorunludur!' });
+    }
+
+    await RefreshToken.deleteMany({ token: oldRefreshToken });
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: 'Geçersiz kullanıcı bilgisi. Lütfen tekrar giriş yapın.',
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: 'Kullanıcı bulunamadı. Lütfen tekrar giriş yapın.' });
+    }
 
     // Generate new tokens
     const tokens = generateTokens(req.user);
 
     // Save new refresh token
-    refreshTokenController.saveToken(req.user.id, tokens.refreshToken);
+    await RefreshToken.create({
+      userId: existingUser._id,
+      token: tokens.refreshToken,
+    });
 
-    res.json(tokens);
+    res.status(200).json(tokens);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -114,5 +148,5 @@ const refreshTokens = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  refreshTokens
+  refreshTokens,
 };
