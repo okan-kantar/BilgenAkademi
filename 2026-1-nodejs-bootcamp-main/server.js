@@ -12,7 +12,7 @@ const categoryRoutes = require('./routes/categoryRoutes.js');
 const connectDB = require('./config/dbConfig.js');
 const PORT = 3000;
 
-connectDB()
+connectDB();
 
 app.use(cors(corsOptions));
 
@@ -31,8 +31,8 @@ app.use(express.urlencoded({ extended: false }));
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
-app.use("/api/products", productRoutes)
-app.use("/api/categories", categoryRoutes)
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.use((req, res) => {
   res.status(404).send('Page not found!');

@@ -8,18 +8,43 @@ const {
   getProductsByCategoriesValidator,
   updateProductValidator,
 } = require('../validators/productValidators');
+const { verifyAccessToken } = require('../middleware/auth');
+const { authorizeRoles } = require('../middleware/roles');
 
-router.get('/',  productController.getAllProducts);
+router.get(
+  '/',
+  verifyAccessToken,
+  authorizeRoles('admin'),
+  productController.getAllProducts,
+);
 router.get(
   '/by-categories',
   getProductsByCategoriesValidator,
   validate,
   productController.getProductsByCategories,
 );
-router.post('/', createProductValidator, validate, productController.createNewProduct);
-router.put('/:productId', updateProductValidator, validate, productController.updateProduct);
+
+router.post(
+  '/',
+  verifyAccessToken,
+  authorizeRoles('admin'),
+  createProductValidator,
+  validate,
+  productController.createNewProduct,
+);
+
+router.put(
+  '/:productId',
+  verifyAccessToken,
+  authorizeRoles('user'),
+  updateProductValidator,
+  validate,
+  productController.updateProduct,
+);
 router.delete(
   '/:productId',
+  verifyAccessToken,
+  authorizeRoles('admin', 'user'),
   productIdParamValidator,
   validate,
   productController.deleteProduct,

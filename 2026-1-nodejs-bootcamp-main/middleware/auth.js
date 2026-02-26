@@ -1,15 +1,13 @@
-const jwt = require("jsonwebtoken");
-const { accessToken, refreshToken } = require("../config/jwtConfig");
-const refreshTokenController = require("../controllers/refreshTokenController");
+const jwt = require('jsonwebtoken');
+const { accessToken, refreshToken } = require('../config/jwtConfig');
+const refreshTokenController = require('../controllers/refreshTokenController');
 
 const verifyAccessToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res
-      .status(403)
-      .json({ message: "Token gerekli! Lütfen giriş yapınız!" });
+    return res.status(403).json({ message: 'Token gerekli! Lütfen giriş yapınız!' });
   }
 
   try {
@@ -21,17 +19,17 @@ const verifyAccessToken = (req, res, next) => {
   }
 };
 
-const verifyRefreshToken = (req, res, next) => {
+const verifyRefreshToken = async (req, res, next) => {
   const { refreshToken: token } = req.body;
 
   if (!token) {
-    return res.status(403).json({ message: "Refresh token required" });
+    return res.status(403).json({ message: 'Refresh token required' });
   }
 
   try {
-    const storedToken = refreshTokenController.findToken(token);
+    const storedToken = await RefreshToken.findOne({ token });
     if (!storedToken) {
-      return res.status(403).json({ message: "Invalid refresh token" });
+      return res.status(403).json({ message: 'Invalid refresh token' });
     }
 
     const decoded = jwt.verify(token, refreshToken.secret);
@@ -40,7 +38,7 @@ const verifyRefreshToken = (req, res, next) => {
   } catch (err) {
     return res
       .status(401)
-      .json({ message: "Invalid or expired refresh token" });
+      .json({ message: 'Invalid or expired refresh token' });
   }
 };
 
