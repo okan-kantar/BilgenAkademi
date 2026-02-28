@@ -9,12 +9,16 @@ const userRoutes = require('./routes/userRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
 const productRoutes = require('./routes/productRoutes.js');
 const categoryRoutes = require('./routes/categoryRoutes.js');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger.js');
 const connectDB = require('./config/dbConfig.js');
 const PORT = 3000;
 
 connectDB();
 
 app.use(cors(corsOptions));
+// Swagger docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Request log middleware
 app.use(logger);

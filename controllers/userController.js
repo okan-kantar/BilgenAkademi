@@ -1,103 +1,136 @@
-const fs = require('node:fs');
-const path = require('node:path');
+const bcryptjs = require('bcryptjs');
+const User = require('../models/User');
 
-const filePath = path.join(__dirname, '..', 'models', 'data.json');
-
-const readData = () => {
-  const jsonData = fs.readFileSync(filePath);
-  return JSON.parse(jsonData);
+const sanitizeUser = (userDoc) => {
+  const user = userDoc.toObject ? userDoc.toObject() : userDoc;
+  const { password, ...safeUser } = user;
+  return safeUser;
 };
 
-const writeData = (users) => {
-  fs.writeFileSync(filePath, JSON.stringify(users, null, 2));
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({ success: true, count: users.length, data: users });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
-const getAllUsers = (req, res) => {
-  const data = readData();
-  res.json(data);
-};
+const createNewUser = async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
 
-const createNewUser = (req, res) => {
-  const users = readData();
-  const newUsers = [...users, req.body];
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'email ve password zorunludur',
+      });
+    }
 
-  writeData(newUsers);
+    const existingUser = await User.findOne({ email }).select('_id').lean();
 
-  res.json(newUsers);
-};
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bu email adresi zaten kayitli',
+      });
+    }
 
-const updateUser = (req, res) => {
-  const { id: userId, email } = req.body;
-  let users = readData();
-  const findUser = users.find((user) => user.id === userId);
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
 
-  if (findUser) {
-    users = users.map((user) => {
-      if (user.id === findUser.id) {
-        return { ...user, email };
-      }
-      return user;
+    const createdUser = await User.create({
+      email,
+      password: hashedPassword,
+      role,
     });
 
-    writeData(users);
-    res.json({ success: true, users });
-  } else {
-    res.json({ success: false, message: 'Kullanıcı Bulunamadı!' });
+    res.status(201).json({ success: true, data: sanitizeUser(createdUser) });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-const deleteUser = (req, res) => {
-  const { userId } = req.params;
-  let users = readData();
-
-  users = users.filter((user) => user.id !== Number(userId));
-
-  writeData(users);
-
-  res.status(200).json(users);
-};
-
-const registerUser = (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
+const updateUser = async (req, res) => {
   try {
-    const newUser = { id: Math.random(), email, password };
+    const userId = req.body.id || req.body.userId || req.params.userId;
 
-    const usersFilePath = path.join(__dirname, '..', 'models', 'users.json');
-    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
-
-    const findUser = users.find((user) => user.email === email);
-
-    if (findUser) {
-      return res
-        .status(400)
-        .json({ message: 'Bu email adresi zaten kayıtlı!' });
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Guncelleme icin userId zorunludur',
+      });
     }
 
-    users.push(newUser);
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
-    res.status(201).json(newUser);
+    const { email, password, role } = req.body;
+    const updatePayload = {};
+
+    if (email !== undefined) updatePayload.email = email;
+    if (role !== undefined) updatePayload.role = role;
+
+    if (password !== undefined) {
+      const salt = await bcryptjs.genSalt(10);
+      updatePayload.password = await bcryptjs.hash(password, salt);
+    }
+
+    if (!Object.keys(updatePayload).length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Guncellenecek en az bir alan gondermelisiniz',
+      });
+    }
+
+    if (updatePayload.email) {
+      const existingUser = await User.findOne({ email: updatePayload.email })
+        .select('_id')
+        .lean();
+
+      if (existingUser && existingUser._id.toString() !== userId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Bu email adresi zaten kullanimda',
+        });
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updatePayload, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanici bulunamadi',
+      });
+    }
+
+    res.status(200).json({ success: true, data: updatedUser });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-const loginUser = (req, res) => {
+const deleteUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { userId } = req.params;
 
-    const usersFilePath = path.join(__dirname, '..', 'models', 'users.json');
-    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
+    const deletedUser = await User.findByIdAndDelete(userId);
 
-    const findUser = users.find((user) => user.email === email);
-
-    if (!findUser) {
-      return res.status(401).json({ message: 'Geçersiz email veya şifre' });
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kullanici bulunamadi',
+      });
     }
 
-    res.status(200).json({ message: 'Giriş başarılı!', findUser });
+    res.status(200).json({ success: true, message: 'Kullanici silindi' });
   } catch (error) {
-     res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -106,5 +139,4 @@ module.exports = {
   createNewUser,
   updateUser,
   deleteUser,
-  registerUser,
 };
