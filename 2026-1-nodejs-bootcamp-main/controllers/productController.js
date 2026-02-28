@@ -3,10 +3,11 @@ const Category = require('../models/Category');
 
 const getAllProducts = async (req, res) => {
   try {
-    // populate ile category bilgisini de getiriyoruz, sadece name alanını alıyoruz
     const products = await Product.find().populate("category", "name");
 
-    res.json({ success: true, count: products.length, data: products });
+    res
+      .status(200)
+      .json({ success: true, count: products.length, data: products });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -73,12 +74,14 @@ const getProductsByCategories = async (req, res) => {
       ? rawCategories.join(',')
       : rawCategories;
 
-    const categoryNames = [...new Set(
-      normalizedCategories
-        .split(',')
-        .map((category) => category.trim())
-        .filter(Boolean),
-    )];
+    const categoryNames = [
+      ...new Set(
+        normalizedCategories
+          .split(',')
+          .map((category) => category.trim())
+          .filter(Boolean),
+      ),
+    ];
 
     if (!categoryNames.length) {
       return res.status(400).json({
@@ -100,8 +103,9 @@ const getProductsByCategories = async (req, res) => {
 
     const categoryIds = categories.map((category) => category._id);
 
-    const products = await Product.find({ category: { $in: categoryIds } })
-      .populate('category', 'name');
+    const products = await Product.find({
+      category: { $in: categoryIds },
+    }).populate('category', 'name');
 
     res.json({
       success: true,
