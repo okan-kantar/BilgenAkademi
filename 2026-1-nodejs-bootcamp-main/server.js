@@ -1,7 +1,8 @@
 require('dotenv').config();
 
 const express = require('express');
-const app = express();
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const { logger } = require('./middleware/logEvents.js');
 const corsOptions = require('./config/corsConfig.js');
@@ -12,9 +13,19 @@ const categoryRoutes = require('./routes/categoryRoutes.js');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger.js');
 const connectDB = require('./config/dbConfig.js');
+const path = require('path');
 const PORT = 3000;
 
 connectDB();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
 
 app.use(cors(corsOptions));
 // Swagger docs
@@ -26,11 +37,15 @@ app.use(logger);
 // Request error log middleware
 /* app.use(errorHandler); */
 
-// Middleware to parse JSON badies
+// Middleware to parse JSON bodies
 app.use(express.json());
 
 // Content-Type application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }));
+
+app.get('/realtime-demo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'realtime-demo.html'));
+});
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -38,10 +53,26 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 
+io.on('connection', (socket) => {
+  socket.on('chat message', (rawMessage) => {
+    const message = typeof rawMessage === 'string' ? rawMessage.trim() : '';
+
+    if (!message) {
+      return;
+    }
+
+    io.emit('chat message', {
+      socketId: socket.id,
+      message,
+      createdAt: new Date().toISOString(),
+    });
+  });
+});
+
 app.use((req, res) => {
   res.status(404).send('Page not found!');
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Sunucu ${PORT} portunda çalışıyor!`);
 });
