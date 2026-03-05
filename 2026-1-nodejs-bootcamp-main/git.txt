@@ -1,3 +1,0 @@
-// verileri git'ten çekme komutu
-
-git subtree pull --prefix=2026-1-nodejs-bootcamp-main hoca main --squash
