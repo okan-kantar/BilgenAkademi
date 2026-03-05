@@ -8,3 +8,5 @@
 package-lock.json
 node_modules/
 .env
+/bitirme-projesi
+/halkla-iliskiler-masasi
